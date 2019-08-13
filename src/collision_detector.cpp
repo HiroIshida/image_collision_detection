@@ -59,13 +59,19 @@ void CollisionDetector::callback(const sensor_msgs::Image& msg)
     img_processed = convert_bf((cv_ptr->image)(roi), predicate);
     img_pre = img_processed;
     isInit = false;
-  }else{
-    img_processed = convert_bf((cv_ptr->image)(roi), predicate);
-    cost = compute_cost(img_processed, img_pre);
-    std_msgs::Int64 msg_cost;
-    msg_cost.data = cost;
-    pub_cost.publish(msg_cost);
+    return;
   }
+
+  img_processed = convert_bf((cv_ptr->image)(roi), predicate);
+  cost = compute_cost(img_processed, img_pre);
+  if(cost > cost_max){
+    cost_max = cost;
+  }
+  std_msgs::Int64 msg_cost, msg_cost_max;
+  msg_cost.data = cost;
+  msg_cost_max.data = cost_max;
+  pub_cost.publish(msg_cost);
+  pub_cost_max.publish(msg_cost_max);
   sensor_msgs::ImagePtr msg_debug = cv_bridge::CvImage(std_msgs::Header(), "bgr8", img_processed).toImageMsg();
   pub_image.publish(msg_debug);
   img_pre = img_processed;
