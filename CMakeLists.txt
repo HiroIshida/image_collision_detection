@@ -20,7 +20,7 @@ find_package(OpenCV REQUIRED)
 
 include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 add_library(${PROJECT_NAME} src/image_dif.cpp)
-add_executable(change_detector src/attention.cpp src/image_dif.cpp)
-target_link_libraries(change_detector ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PCL_LIBRARIES})
+add_executable(test src/attention.cpp src/image_dif.cpp)
+target_link_libraries(test ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
 add_definitions(-std=c++11)
