@@ -15,19 +15,19 @@ class CollisionDetector{
   std::function<bool(cv::Vec3b)> predicate;
   ros::NodeHandle nh;
   ros::Subscriber sub_image;
-  ros::Publisher pub_image, pub_cost, pub_cost_max;
+  ros::Publisher pub_image, pub_cost, pub_cost_max, pub_cost_absolute;
   ros::ServiceServer service_init;
   cv::Rect roi;
-  cv::Mat img_pre;
+  cv::Mat img_pre, img_init;
   bool isInit = true;
-  int cost;
-  int cost_max;
+  int cost, cost_max, cost_absolute;
 
   public:
   void init_common();
   CollisionDetector(){
     pub_cost = nh.advertise<std_msgs::Int64>("/cost", 1);
     pub_cost_max = nh.advertise<std_msgs::Int64>("/cost_max", 1);
+    pub_cost_absolute = nh.advertise<std_msgs::Int64>("/cost_absolute", 1);
     pub_image = nh.advertise<sensor_msgs::Image>("/debug_image", 1);
     sub_image = nh.subscribe("/kinect_head/rgb/image_color", 1, &CollisionDetector::callback, this);
     service_init = nh.advertiseService("image_collision_detection_init", &CollisionDetector::req_handler_init, this);
@@ -46,6 +46,7 @@ void CollisionDetector::init_common()
   isInit = true;
   cost = 0;
   cost_max = 0;
+  cost_absolute = 0;
 }
 
 void CollisionDetector::callback(const sensor_msgs::Image& msg)
@@ -58,20 +59,25 @@ void CollisionDetector::callback(const sensor_msgs::Image& msg)
     roi = determine_ROI(cv_ptr->image, predicate, mergin);
     img_processed = convert_bf((cv_ptr->image)(roi), predicate);
     img_pre = img_processed;
+    img_init = img_pre;
     isInit = false;
     return;
   }
 
   img_processed = convert_bf((cv_ptr->image)(roi), predicate);
   cost = compute_cost(img_processed, img_pre);
+  cost_absolute = compute_cost(img_processed, img_init);
   if(cost > cost_max){
     cost_max = cost;
   }
-  std_msgs::Int64 msg_cost, msg_cost_max;
+  std_msgs::Int64 msg_cost, msg_cost_max, msg_cost_absolute;
   msg_cost.data = cost;
   msg_cost_max.data = cost_max;
+  msg_cost_absolute.data = cost_absolute;
+
   pub_cost.publish(msg_cost);
   pub_cost_max.publish(msg_cost_max);
+  pub_cost_absolute.publish(msg_cost_absolute);
   sensor_msgs::ImagePtr msg_debug = cv_bridge::CvImage(std_msgs::Header(), "bgr8", img_processed).toImageMsg();
   pub_image.publish(msg_debug);
   img_pre = img_processed;
