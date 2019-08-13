@@ -1,5 +1,6 @@
 (load "package://pr2eus/pr2-interface.l")
 (load "client.lsp")
+(ros::load-ros-manifest "force_proximity_ros")
 (ros::roseus "test-image-collision-detection" :anonymous t)
 (defun stop nil (send *ri* :stop-motion)) 
 
@@ -19,22 +20,32 @@
 
 
 (setq *cost-absolute* 0)
+(setq *prox-init* nil)
+(setq *prox* 0)
 (ros::subscribe "cost_absolute" std_msgs::Int64
                 #'(lambda (msg) 
                     (setq *cost-absolute* (send msg :data))))
 
+(ros::subscribe "/proximity_sensor" force_proximity_ros::ProximityStamped
+                #'(lambda (msg)
+                    (let ((data (send msg :proximity :average)))
+                      (unless *prox-init* (setq *prox-init* data));; call only once
+                      (setq *prox* (- data *prox-init*)))))
+
 
 
 (speak-jp "はじめます")
-(send *robot* :larm :move-end-pos #f(0 -300 0) :world)
-(send *ri* :angle-vector (send *robot* :angle-vector) 100000)
+(send *robot* :larm :move-end-pos #f(0 -100 0) :world)
+(send *ri* :angle-vector (send *robot* :angle-vector) 20000)
 
 (image-collision-detection-init)
 (loop 
   (ros::spin-once)
   (print *cost-absolute*)
-  (when (> *cost-absolute* 800)
+  (print *prox*)
+  (when (> *cost-absolute* 1000)
     (speak-jp "あ")
     (send *ri* :stop-motion)
     (send *ri* :wait-interpolation)
     (return)))
+
