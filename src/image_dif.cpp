@@ -77,7 +77,7 @@ bool isSameSize(const cv::Mat& img1, const cv::Mat& img2)
   return true;
 }
 
-std::vector<double> compute_filtered_center(const cv::Mat& img, std::function<bool(cv::Vec3b)> predicate)
+cv::Rect determine_ROI(const cv::Mat& img, std::function<bool(cv::Vec3b)> predicate, int mergin)
 {
   double row_sum = 0.0;
   double col_sum = 0.0;
@@ -92,9 +92,14 @@ std::vector<double> compute_filtered_center(const cv::Mat& img, std::function<bo
       }
     }
   }
-  std::vector<double> filtered_center = {row_sum/counter, col_sum/counter};
-  return filtered_center;
+  std::vector<int> filtered_center = {round(row_sum/counter), round(col_sum/counter)};
+  int x = filtered_center[1] - round(mergin * 0.5);
+  int y = filtered_center[0] - round(mergin * 0.5);
+  cv::Rect roi(x, y, mergin, mergin);
+  return roi;
 }
+
+
 
 cv::Mat diff_image(const cv::Mat& img1, const cv::Mat& img2)//tmp
 {

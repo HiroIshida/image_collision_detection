@@ -14,5 +14,5 @@ std::function<bool(cv::Vec3b)> gen_hsi_filter(
     float s_min, float s_max,
     float i_min, float i_max);
 bool isSameSize(const cv::Mat& img1, const cv::Mat& img2);
-std::vector<double> compute_filtered_center(const cv::Mat& img, std::function<bool(cv::Vec3b)> predicate);
+cv::Rect determine_ROI(const cv::Mat& img, std::function<bool(cv::Vec3b)> predicate, int mergin);
 cv::Mat diff_image(const cv::Mat& img1, const cv::Mat& img2);
