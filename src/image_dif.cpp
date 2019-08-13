@@ -77,18 +77,23 @@ bool isSameSize(const cv::Mat& img1, const cv::Mat& img2)
   return true;
 }
 
-cv::Mat computer_filtered_center(const cv::Mat& img, std::function<bool(cv::Vec3b)> predicate)
+std::vector<double> compute_filtered_center(const cv::Mat& img, std::function<bool(cv::Vec3b)> predicate)
 {
-  cv::Mat img_ret(img.rows, img.cols, CV_8UC3); // CV_8UC3 really?
+  double row_sum = 0.0;
+  double col_sum = 0.0;
+  int counter = 0;
   for (int i = 0; i < img.rows; i++){
     for (int j = 0; j < img.cols; j++){
       auto bgr = img.at<cv::Vec3b>(i, j);
-      auto bgr_white = cv::Vec3b(255, 255, 255);
-      auto bgr_black = cv::Vec3b(0, 0, 0);
-      img_bf.at<cv::Vec3b>(i, j) = predicate(bgr) ? bgr_white : bgr_black;
+      if(predicate(bgr)){
+        row_sum += i;
+        col_sum += j;
+        counter += 1;
+      }
     }
   }
-  return img_bf;
+  std::vector<double> filtered_center = {row_sum/counter, col_sum/counter};
+  return filtered_center;
 }
 
 cv::Mat diff_image(const cv::Mat& img1, const cv::Mat& img2)//tmp
