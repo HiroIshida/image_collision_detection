@@ -18,9 +18,14 @@ find_package(catkin REQUIRED COMPONENTS
 )
 find_package(OpenCV REQUIRED)
 
+catkin_package(
+   CATKIN_DEPENDS roscpp
+   DEPENDS OpenCV)
+
+
 include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 add_library(${PROJECT_NAME} src/image_dif.cpp)
-add_executable(test src/attention.cpp src/image_dif.cpp)
-target_link_libraries(test ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+add_executable(test_hoge src/attention.cpp src/image_dif.cpp)
+target_link_libraries(test_hoge ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
 add_definitions(-std=c++11)
