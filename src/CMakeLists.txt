@@ -1,0 +1,15 @@
+cmake_minimum_required(VERSION 3.1)
+project(test_cmake CXX)
+
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+
+set (CMAKE_CXX_STANDARD 11)
+set (CMAKE_CXX_FLAGS_RELEASE "-O3")
+find_package(PkgConfig)
+pkg_check_modules(LIBSAMPLE REQUIRED opencv)
+include_directories(${LIBSAMPLE_INCLUDE_DIRS})
+add_library(mylib STATIC image_dif.cpp)
+add_executable(exe main.cpp image_dif.cpp)
+target_link_libraries(exe ${LIBSAMPLE_LIBRARIES})
