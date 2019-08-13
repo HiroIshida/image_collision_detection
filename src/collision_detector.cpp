@@ -10,29 +10,66 @@
 #include <sensor_msgs/image_encodings.h>
 #include "image_dif.hpp"
 #include <boost/function.hpp> 
-#include <active_visual_perception/CostService.h>
 
 class CollisionDetector{
+  std::function<bool(cv::Vec3b)> predicate;
   ros::NodeHandle nh;
-  bool isInit;
+  ros::Subscriber sub_image;
+  ros::Publisher pub_image;
+  ros::ServiceServer service_init;
+  cv::Rect roi;
+  bool isInit = true;
+  int cost;
+  int cost_max;
 
   public:
-  ChangeDetector();
+  void init_common();
+  CollisionDetector(){
+    pub_image = nh.advertise<sensor_msgs::Image>("/debug_image", 1);
+    sub_image = nh.subscribe("/kinect_head/rgb/image_color", 1, &CollisionDetector::callback, this);
+    service_init = nh.advertiseService("change_detector_init", &CollisionDetector::req_handler_init, this);
+    predicate = gen_hsi_filter(0.0, 1.0, 0.3, 1.0, 0.5, 0.88);
+    init_common();
+  }
 
   private:
-  void init_common();
+  void callback(const sensor_msgs::Image& msg);
+  bool req_handler_init(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res);//deprecated
 
-}
+};
 
-
-CollisionDetector::ChangeDetector(){
-  service_init = nh.advertiseService("change_detector_init", &ChangeDetector::req_handler_init, this);
-  init_common();
-}
-
-CollisionDetector::init_common(){
+void CollisionDetector::init_common()
+{
   isInit = true;
+  cost = 0;
+  cost_max = 0;
 }
 
+void CollisionDetector::callback(const sensor_msgs::Image& msg)
+{
+  cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 
+  if(isInit){
+    int mergin = 100;
+    roi = determine_ROI(cv_ptr->image, predicate, mergin);
+    isInit = false;
+  }
+  cv::Mat img_processed = convert_bf((cv_ptr->image)(roi), predicate);
+  sensor_msgs::ImagePtr msg_debug = cv_bridge::CvImage(std_msgs::Header(), "bgr8", img_processed).toImageMsg();
+  pub_image.publish(msg_debug);
+}
 
+bool CollisionDetector::req_handler_init(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res)//deprecated
+{
+  ROS_INFO("received; initialize change detector");
+  init_common();
+  return true;
+}
+
+int main(int argc, char **argv)
+{
+  ros::init(argc, argv, "change_detector");
+  CollisionDetector rc;
+  ros::spin();
+  return 0;
+}

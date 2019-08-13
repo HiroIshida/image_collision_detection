@@ -25,7 +25,7 @@ catkin_package(
 
 include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 add_library(${PROJECT_NAME} src/image_dif.cpp)
-add_executable(test_hoge src/attention.cpp src/image_dif.cpp)
-target_link_libraries(test_hoge ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+add_executable(collision_detector src/collision_detector.cpp src/image_dif.cpp)
+target_link_libraries(collision_detector ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
 add_definitions(-std=c++11)
