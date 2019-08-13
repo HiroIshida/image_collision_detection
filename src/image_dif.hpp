@@ -4,6 +4,7 @@
 #include <functional>
 #include <cmath>
 #include <vector>
+#include <cmath>
 
 cv::Vec3f bgr2hsi(cv::Vec3b bgr);
 cv::Mat convert_bf(const cv::Mat& img, std::function<bool(cv::Vec3b)> predicate);

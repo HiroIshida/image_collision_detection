@@ -7,11 +7,10 @@ int main()
   auto vec = compute_filtered_center(img, predicate);
   std::cout<< vec[0] << std::endl;
   std::cout<< vec[1] << std::endl;
-  
 
-  /*
+  cv::circle(img, cv::Point(round(vec[1]), round(vec[0])), 10, cv::Scalar(0, 0, 200), 3, 4);
+  //cv::circle(img, cv::Point(200, 200), 100, cv::Scalar(0, 0, 200), 3, 4);
   cv::namedWindow("Image", CV_WINDOW_AUTOSIZE);
-  cv::imshow("Image", img1_filtered);
+  cv::imshow("Image", img);
   cv::waitKey();
-  */
 }
