@@ -27,7 +27,7 @@ class CollisionDetector{
   CollisionDetector(){
     pub_image = nh.advertise<sensor_msgs::Image>("/debug_image", 1);
     sub_image = nh.subscribe("/kinect_head/rgb/image_color", 1, &CollisionDetector::callback, this);
-    service_init = nh.advertiseService("change_detector_init", &CollisionDetector::req_handler_init, this);
+    service_init = nh.advertiseService("image_collision_detection_init", &CollisionDetector::req_handler_init, this);
     predicate = gen_hsi_filter(0.0, 1.0, 0.3, 1.0, 0.5, 0.88);
     init_common();
   }
